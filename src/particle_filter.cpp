@@ -20,19 +20,67 @@
 using namespace std;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
-	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of 
-	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
-	// Add random Gaussian noise to each particle.
-	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
+	// Set the number of particles.
+	num_particles = 3;
+	particles.reserve(num_particles);
+	weights.reserve(num_particles);
+
+	double std_x = std[0];
+	double std_y = std[1];
+	double std_theta = std[2];
+
+	//Initialize all particles to first position (based on estimates of
+	//   x, y, theta and their uncertainties from GPS) and all weights to 1.
+	// We will use 2 independent Gaussian distributions in first approximation
+	normal_distribution<double> dist_x(x, std_x);
+	normal_distribution<double> dist_y(y, std_y);
+	normal_distribution<double> dist_theta(theta, std_theta);
+
+	for (int i = 0; i < num_particles; ++i) {
+		particles[i].id = i;
+		particles[i].x = dist_x(gen);
+		particles[i].y = dist_y(gen);
+		particles[i].theta = dist_theta(gen);
+		particles[i].weight = 1;
+		weights[i] = 1;
+	}
+
+
+	is_initialized = true;
 
 }
 
-void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
-	// TODO: Add measurements to each particle and add random Gaussian noise.
-	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
-	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
-	//  http://www.cplusplus.com/reference/random/default_random_engine/
+void ParticleFilter::prediction(double delta_t, double std_pos[],
+		double velocity, double yaw_rate) {
+	double std_x = std_pos[0];
+	double std_y = std_pos[1];
+	double std_theta = std_pos[2];
 
+	normal_distribution<double> noise_x(0.0, std_x);
+	normal_distribution<double> noise_y(0.0, std_y);
+	normal_distribution<double> noise_theta(0.0, std_theta);
+
+	// Add measurements to each particle to integrate the position using velocity and yaw rate
+	for (int i = 0; i < num_particles; ++i) {
+		double xf;
+		double yf;
+		double theta_f;
+
+		if(fabs(yaw_rate)<1e-4){
+			xf = particles[i].x + velocity*delta_t*cosf(particles[i].theta);
+			yf = particles[i].x + velocity * delta_t * sinf(particles[i].theta);
+			theta_f = particles[i].theta;
+		} else {
+			theta_f = particles[i].theta + yaw_rate * delta_t;
+			xf = particles[i].x + velocity / yaw_rate * (sinf(theta_f) - sinf(particles[i].theta));
+			yf = particles[i].y + velocity / yaw_rate * (cosf(particles[i].theta) - cosf(theta_f));
+		}
+
+		// Add random Gaussian noise
+		particles[i].x = xf + noise_x(gen);
+		particles[i].y = yf + noise_y(gen);
+		particles[i].theta = theta_f + noise_theta(gen);
+	}
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
@@ -55,6 +103,14 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
+	vector<LandmarkObs> predicted(observations.size());
+
+
+	cout<<"dataAssociation"<<endl;
+	//cout<<"predicted"<<predicted[0];
+	cout<<"dataAssociation"<<endl;
+
+
 }
 
 void ParticleFilter::resample() {
@@ -64,7 +120,9 @@ void ParticleFilter::resample() {
 
 }
 
-Particle ParticleFilter::SetAssociations(Particle particle, std::vector<int> associations, std::vector<double> sense_x, std::vector<double> sense_y)
+Particle ParticleFilter::SetAssociations(Particle particle,
+		std::vector<int> associations, std::vector<double> sense_x,
+		std::vector<double> sense_y)
 {
 	//particle: the particle to assign each listed association, and association's (x,y) world coordinates mapping to
 	// associations: The landmark id that goes along with each listed association

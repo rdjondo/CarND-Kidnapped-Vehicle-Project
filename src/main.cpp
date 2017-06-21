@@ -108,7 +108,9 @@ int main()
         		obs.x = x_sense[i];
 				obs.y = y_sense[i];
 				noisy_observations.push_back(obs);
+				cout<<"X:"<<x_sense[i]<<"  Y:"<<y_sense[i]<<endl;
         	}
+          cout<<"End observations"<<endl;
 
 		  // Update the weights and resample
 		  pf.updateWeights(sensor_range, sigma_landmark, noisy_observations, map);
