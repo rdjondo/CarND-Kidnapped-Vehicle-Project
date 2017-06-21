@@ -71,7 +71,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
 			yf = particles[i].x + velocity * delta_t * sinf(particles[i].theta);
 			theta_f = particles[i].theta;
 		} else {
-			theta_f = particles[i].theta + yaw_rate * delta_t;
+			theta_f = fmod(particles[i].theta + yaw_rate * delta_t, 2*M_PI);
 			xf = particles[i].x + velocity / yaw_rate * (sinf(theta_f) - sinf(particles[i].theta));
 			yf = particles[i].y + velocity / yaw_rate * (cosf(particles[i].theta) - cosf(theta_f));
 		}
@@ -79,7 +79,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
 		// Add random Gaussian noise
 		particles[i].x = xf + noise_x(gen);
 		particles[i].y = yf + noise_y(gen);
-		particles[i].theta = theta_f + noise_theta(gen);
+		particles[i].theta = fmod(theta_f + noise_theta(gen), 2*M_PI);
 	}
 }
 
@@ -88,6 +88,11 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
+
+	// In world coordinates get the average of the particles and plot a 6-sigma circle around them.
+	// Gather the world coordinates landmark position inside the 6-sigma circle
+	// compute the distance between each landmark position and the particule's sensed positions
+	// Use SetAssociations
 
 }
 
@@ -103,13 +108,19 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
-	vector<LandmarkObs> predicted(observations.size());
+	static vector<LandmarkObs> sensed_in_world(observations.size());
 
+	for(int i = 0; i < num_particles; ++i){
+		cout<<" particle id:"<<particles[i].id<<"  x:"<< observations[i].x << "  y:" << observations[i].y <<endl;
 
-	cout<<"dataAssociation"<<endl;
-	//cout<<"predicted"<<predicted[0];
-	cout<<"dataAssociation"<<endl;
-
+		double theta_transf = -particles[i].theta;
+		cout<<"world observation:"<<endl;
+		for (int j = 0; j < observations.size(); ++j) {
+			double x_world = observations[j].x * cosf(theta_transf) - observations[j].y * sinf(theta_transf)  - particles[i].x;
+			double y_world = observations[j].x * sinf(theta_transf) + observations[j].y * cosf(theta_transf)  - particles[i].y;
+			cout<<"id:"<<observations[j].id<<"  x:"<< x_world << "  y:" << y_world <<endl;
+		}
+	}
 
 }
 
