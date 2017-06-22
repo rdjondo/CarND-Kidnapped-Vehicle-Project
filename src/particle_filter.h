@@ -29,9 +29,7 @@ class ParticleFilter {
 	
 	// Number of particles to draw
 	int num_particles; 
-	
-	
-	
+
 	// Flag, if filter is initialized
 	bool is_initialized;
 	
@@ -41,6 +39,15 @@ class ParticleFilter {
 	// Random random number generator
 	std::default_random_engine gen;
 
+	double std_x;
+
+	double std_y;
+
+	double std_theta;
+
+
+
+
 public:
 	
 	// Set of current particles
@@ -48,7 +55,7 @@ public:
 
 	// Constructor
 	// @param M Number of particles
-	ParticleFilter() : num_particles(0), is_initialized(false) {}
+	ParticleFilter() : num_particles(1), is_initialized(false) {}
 
 	// Destructor
 	~ParticleFilter() {}
@@ -74,14 +81,41 @@ public:
 	 * @param yaw_rate Yaw rate of car from t to t+1 [rad/s]
 	 */
 	void prediction(double delta_t, double std_pos[], double velocity, double yaw_rate);
-	
+
+
+	/**
+	 * Compute real world position coordinates of the landmarks from the point of view of each particle
+	 * @param observations
+	 * @param sensor_range
+	 * @param map_landmarks
+	 */
+	void positionsToWorld(std::vector<LandmarkObs> &observations, Map &map_landmarks);
+
+    /**
+     * Calculate position of average Particle
+     * @return
+     */
+    Particle calculateMeanParticle() const;
+
+    /**
+     * Gather the world coordinates landmark position inside the 6-sigma circle plus
+     * sensor range around average particle
+     * @param sensor_range
+     * @param map_landmarks
+     * @param mean_particle
+     * @param candidate_landmarks
+     */
+    void findCandidateLandMarks(double sensor_range, const Map &map_landmarks, const Particle &mean_particle,
+                                std::vector<Map::single_landmark_s> &candidate_landmarks) const;
+
 	/**
 	 * dataAssociation Finds which observations correspond to which landmarks (likely by using
 	 *   a nearest-neighbors data association).
 	 * @param predicted Vector of predicted landmark observations
 	 * @param observations Vector of landmark observations
 	 */
-	void dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations);
+	void dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs> &observations,
+						 double sensor_range, Map &map_landmarks);
 	
 	/**
 	 * updateWeights Updates the weights for each particle based on the likelihood of the 
@@ -117,6 +151,7 @@ public:
 	const bool initialized() const {
 		return is_initialized;
 	}
+
 };
 
 
