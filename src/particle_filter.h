@@ -39,12 +39,6 @@ class ParticleFilter {
 	// Random random number generator
 	std::default_random_engine gen;
 
-	double std_x;
-
-	double std_y;
-
-	double std_theta;
-
 
 
 

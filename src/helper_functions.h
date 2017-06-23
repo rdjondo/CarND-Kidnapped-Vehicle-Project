@@ -58,7 +58,7 @@ inline double dist(double x1, double y1, double x2, double y2) {
  * @return
  */
 inline double unimodal_gaussian(double mu, double sigma, double x){
-    return exp(- ((mu - x) * (mu - x)) / (sigma *sigma) / 2.0) / sqrt(2.0 * M_PI * (sigma*sigma));
+    return exp(- ((mu - x) * (mu - x)) / (sigma *sigma) / 2.0);
 
 }
 
