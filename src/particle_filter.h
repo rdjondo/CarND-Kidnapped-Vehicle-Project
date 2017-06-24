@@ -97,10 +97,10 @@ public:
      * @param sensor_range
      * @param map_landmarks
      * @param mean_particle
-     * @param candidate_landmarks
+     * @param predicted
      */
     void findCandidateLandMarks(double sensor_range, const Map &map_landmarks, const Particle &mean_particle,
-                                std::vector<Map::single_landmark_s> &candidate_landmarks) const;
+                                std::vector<LandmarkObs> &predicted) const;
 
 	/**
 	 * dataAssociation Finds which observations correspond to which landmarks (likely by using
@@ -129,12 +129,7 @@ public:
 	 */
 	void resample();
 
-	/*
-	 * Set a particles list of associations, along with the associations calculated world x,y coordinates
-	 * This can be a very useful debugging tool to make sure transformations are correct and assocations correctly connected
-	 */
-	Particle SetAssociations(Particle particle, std::vector<int> associations, std::vector<double> sense_x, std::vector<double> sense_y);
-	
+
 	std::string getAssociations(Particle best);
 	std::string getSenseX(Particle best);
 	std::string getSenseY(Particle best);
@@ -146,6 +141,7 @@ public:
 		return is_initialized;
 	}
 
+    void nearestNeighbour(std::vector<LandmarkObs> &predicted, Map &map_landmarks);
 };
 
 
