@@ -53,15 +53,6 @@ inline double dist(double x1, double y1, double x2, double y2) {
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-/**
- * calculates the probability of x for 1-dim Gaussian with mean mu and var. sigma
- * @return
- */
-inline double unimodal_gaussian(double mu, double sigma, double x){
-    return exp(- ((mu - x) * (mu - x)) / (sigma *sigma) / 2.0);
-
-}
-
 
 
 inline double * getError(double gt_x, double gt_y, double gt_theta, double pf_x, double pf_y, double pf_theta) {

@@ -1,7 +1,7 @@
 #include <uWS/uWS.h>
-#include <iostream>
+//#include <iostream>
 #include "json.hpp"
-#include <math.h>
+//#include <math.h>
 #include "particle_filter.h"
 
 using namespace std;
@@ -110,7 +110,7 @@ int main()
 				noisy_observations.push_back(obs);
 				//cout<<"X:"<<x_sense[i]<<"  Y:"<<y_sense[i]<<endl;
         	}
-          cout<<"End observations"<<endl;
+          // cout<<"End observations"<<endl;
 
 		  // Update the weights and resample
 		  pf.updateWeights(sensor_range, sigma_landmark, noisy_observations, map);
@@ -118,7 +118,7 @@ int main()
 
 		  // Calculate and output the average weighted error of the particle filter over all time steps so far.
 		  vector<Particle> particles = pf.particles;
-		  int num_particles = particles.size();
+		  uint32_t num_particles = particles.size();
 		  double highest_weight = -1.0;
 		  Particle best_particle;
 		  double weight_sum = 0.0;
