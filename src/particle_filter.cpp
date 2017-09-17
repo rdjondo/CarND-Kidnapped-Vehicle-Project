@@ -270,20 +270,23 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
         particles[i].weight = 1.0;
         weights[i] = 1.0;
     }
+    do{
+        for (Particle &particle:particles) {
+            double prob = 1.0;
+            for (int i = 0; i < particle.associations.size(); ++i) {
+                int associated_landmark = particle.associations[i] - 1;
+                Map::single_landmark_s landmark = landmark_list[associated_landmark];
+                prob *= bivariate_normal(particle.sense_x[i], particle.sense_y[i],
+                                         landmark.x_f, landmark.y_f, sigma_x, sigma_y);
 
-    for (Particle &particle:particles) {
-        double prob = 1.0;
-        for (int i = 0; i < particle.associations.size(); ++i) {
-            int associated_landmark = particle.associations[i] - 1;
-            Map::single_landmark_s landmark = landmark_list[associated_landmark];
-            prob *= bivariate_normal(particle.sense_x[i], particle.sense_y[i],
-                                     landmark.x_f, landmark.y_f, sigma_x, sigma_y);
-
-            //prob *= unimodal_gaussian(distance_predicted, sigma, distance_measured);
+                //prob *= unimodal_gaussian(distance_predicted, sigma, distance_measured);
+            }
+            particle.weight = prob;
+            sum_weights += particle.weight;
         }
-        particle.weight = prob;
-        sum_weights += particle.weight;
-    }
+        sigma_x *= 10;
+        sigma_y *= 10;
+    }while(sum_weights<1e-200);
 
     // Normalize weights
     for (int i = 0; i < particles.size(); ++i) {
